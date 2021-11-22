@@ -1,0 +1,58 @@
+{% set ns = namespace(id = 0, table_id = 0, row_id = 0, table_cnt = 0) -%}
+{% macro format_column(col) -%}
+    {{ col.name_jp }} ({{ col.name }}: {{ col.data_type if col.is_nullable else '%s, not null' % col.data_type }})
+{% endmacro -%}
+{% macro next_id() -%}
+    {% set ns.id = ns.id + 1 -%}
+    {{ ns.id }}
+{%- endmacro -%}
+{% macro count_up_table() -%}
+    {% set ns.table_id = ns.id -%}
+    {% set ns.table_cnt = ns.table_cnt + 1 -%}
+{%- endmacro -%}
+{% macro table_position() -%}
+    {{ ns.table_cnt * 30 }}
+{%- endmacro -%}
+<mxGraphModel>
+    <root>
+        <mxCell id="0"/>
+        <mxCell id="{{ next_id() }}" parent="0"/>
+{% for table in tables %}
+        <!-- TABLE -->
+        <mxCell id="{{ next_id() }}" value="{{ table.name_jp }}&#10;（{{table.name}}）" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+            <mxGeometry x="{{ table_position() }}" y="{{ table_position() }}" width="500" height="50" as="geometry"/>
+        </mxCell>
+    {{ count_up_table() }}
+
+    {% for col in table.columns -%}
+        {%- if col.name == 'id' %}
+        <!-- PK Row -->
+        <mxCell id="{{ next_id() }}" value="" style="shape=partialRectangle;collapsible=0;dropTarget=0;pointerEvents=0;fillColor=none;top=0;left=0;bottom=1;right=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="{{ ns.table_id }}">
+            <mxGeometry width="500" height="30" as="geometry"/>
+        </mxCell>
+            {%- set ns.row_id = ns.id %}
+        <mxCell id="{{ next_id() }}" value="PK" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;fontStyle=1;overflow=hidden;" vertex="1" parent="{{ ns.row_id }}">
+            <mxGeometry width="30" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="{{ next_id() }}" value="{{ format_column(col) }}" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;fontStyle=5;overflow=hidden;" vertex="1" parent="{{ ns.row_id }}">
+            <mxGeometry x="30" width="470" height="30" as="geometry"/>
+        </mxCell>
+
+        {% else %}
+        <!-- Row -->
+        <mxCell id="{{ next_id() }}" value="" style="shape=partialRectangle;collapsible=0;dropTarget=0;pointerEvents=0;fillColor=none;top=0;left=0;bottom=0;right=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="{{ ns.table_id }}">
+            <mxGeometry width="500" height="20" as="geometry"/>
+        </mxCell>
+            {%- set ns.row_id = ns.id %}
+        <mxCell id="{{ next_id() }}" value="" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;editable=1;overflow=hidden;" vertex="1" parent="{{ ns.row_id }}">
+            <mxGeometry width="30" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="{{ next_id() }}" value="{{ format_column(col) }}" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;overflow=hidden;" vertex="1" parent="{{ ns.row_id }}">
+            <mxGeometry x="30" width="470" height="20" as="geometry"/>
+        </mxCell>
+
+        {% endif -%}
+    {%- endfor -%}
+{%- endfor %}
+    </root>
+</mxGraphModel>
